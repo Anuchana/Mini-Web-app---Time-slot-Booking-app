@@ -1,13 +1,58 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Slot Booking</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- CREATE BOOKING FORM -->
+        <div class="card">
+            <h2>Book a Time Slot</h2>
+            <form id="booking-form">
+                <input type="text" id="name" placeholder="Your Name" required>
+                <input type="date" id="booking_date" required>
+                <div class="time-group">
+                    <input type="time" id="start_time" required>
+                    <input type="time" id="end_time" required>
+                </div>
+                <select id="category">
+                    <option value="Meeting">Meeting</option>
+                    <option value="Call">Call</option>
+                    <option value="Focus Work">Focus Work</option>
+                </select>
+                <select id="priority">
+                    <option value="High">High Priority</option>
+                    <option value="Medium" selected>Medium Priority</option>
+                    <option value="Low">Low Priority</option>
+                </select>
+                <input type="text" id="note" placeholder="Optional Note">
+                <input type="password" id="delete_code" placeholder="Secret Delete Code" required>
+                <button type="submit">Submit Booking</button>
+            </form>
+            <p id="message-box" class="hidden"></p>
+        </div>
+
+        <!-- VIEW AND FILTER BOOKINGS -->
+        <div class="card">
+            <h2>Upcoming Bookings</h2>
+            <div class="filters">
+                <input type="date" id="filter_date" placeholder="Filter by Date">
+                <select id="sort_by">
+                    <option value="date">Sort by Date</option>
+                    <option value="priority">Sort by Priority</option>
+                </select>
+                <button type="button" onclick="loadBookings()">Apply Filters</button>
+            </div>
+            
+            <div id="bookings-list">
+                <!-- Bookings will be injected here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>
