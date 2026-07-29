@@ -83,25 +83,15 @@
     font-size: 16px;
     max-width: 46ch;
   }
-  .day-picker{
-    display:flex;
+  .day-display{
     font-family: var(--font-heading);
-    flex-direction: column;
-    gap: 6px;
-    font-size: 18px;
-    color:#FFFFFF;
+    font-size: 20px;
+    color: var(--surface);
     text-transform: uppercase;
     letter-spacing: .08em;
+    font-weight: 500;
   }
-  .day-picker input{
-    font-family: var(--font-body);
-    font-size: 15px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid #3B4A5A;
-    background: #1F2C3A;
-    color: var(--surface);
-  }
+  
 
   main{
     max-width: 1600px;
@@ -324,7 +314,49 @@
   .form-msg.show{ display:block; }
   .form-msg.error{ background:#FCEEEC; color: var(--conflict); border:1px solid #F1C4BE; }
   .form-msg.success{ background:#EAF4EE; color: var(--good); border:1px solid #C6E4D2; }
+/* ---------- reservation filters ---------- */
 
+.reservation-filters{
+    display:flex;
+    gap:20px;
+    margin-bottom:18px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+}
+
+.filter-field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+
+.filter-field label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:#5B6A76;
+}
+
+
+.filter-field input,
+.filter-field select{
+    width:180px;
+}
+
+
+@media(max-width:600px){
+
+    .reservation-filters{
+        flex-direction:column;
+    }
+
+    .filter-field input,
+    .filter-field select{
+        width:100%;
+    }
+
+}
   /* ---------- list ---------- */
   #bookingList{
     list-style:none;

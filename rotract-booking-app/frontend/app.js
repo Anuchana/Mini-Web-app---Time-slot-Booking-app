@@ -14,6 +14,7 @@
   const track = el('track');
   const emptyState = el('emptyState');
   const lineDateLabel = el('lineDateLabel');
+  const topDateLabel = el('topDateLabel');
   const bookingList = el('bookingList');
   const bookingForm = el('bookingForm');
   const formMsg = el('formMsg');
@@ -136,6 +137,7 @@
   async function loadBookings(){
     const date = viewDateInput.value;
     lineDateLabel.textContent = formatDateLabel(date);
+    topDateLabel.textContent = formatDateLabel(date);
 
     try{
       const res = await fetch(`${API_BASE}/api/bookings?filter_date=${date}`);

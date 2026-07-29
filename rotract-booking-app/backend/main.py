@@ -71,6 +71,7 @@ def create_booking(booking: Bookings, session: Session = Depends(get_session)):
 def get_bookings(
     filter_date: Optional[date] = Query(None, description="Filter by exact date"),
     filter_start_time: Optional[time] = Query(None, description="Filter by min start time"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     filter_end_time: Optional[time] = Query(None, description="Filter by max end time"),
     session: Session = Depends(get_session)
 ):
@@ -82,6 +83,8 @@ def get_bookings(
         statement = statement.where(Bookings.start_time >= filter_start_time)
     if filter_end_time:
         statement = statement.where(Bookings.end_time <= filter_end_time)
+    if category:
+        statement = statement.where(Bookings.category == category)
 
     # Sort purely chronologically now
     statement = statement.order_by(Bookings.booking_date, Bookings.start_time)

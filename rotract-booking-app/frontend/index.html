@@ -18,7 +18,7 @@
   <div class="day-picker">
     <label for="viewDate">Viewing</label>
     <input type="date" id="viewDate">
-  </div>
+  </div> 
 </header>
 
 <main>
@@ -87,9 +87,37 @@
     </div>
 
     <div class="panel list-panel">
-      <h2>Reservations for this day</h2>
-      <ul id="bookingList"></ul>
+
+  <h2>Reservations for this day</h2>
+
+  <div class="reservation-filters">
+
+    <div class="filter-field">
+      <label for="viewDate">Filter by date</label>
+      <input type="date" id="viewDate">
     </div>
+
+
+    <div class="filter-field">
+      <label for="filterCategory">Filter by category</label>
+
+      <select id="filterCategory">
+        <option value="">All</option>
+        <option value="Meeting">Meeting</option>
+        <option value="Call">Call</option>
+        <option value="Personal">Personal</option>
+        <option value="Event">Event</option>
+        <option value="Other">Other</option>
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <ul id="bookingList"></ul>
+
+</div>
 
   </section>
 
