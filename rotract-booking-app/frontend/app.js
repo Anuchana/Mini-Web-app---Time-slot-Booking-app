@@ -206,7 +206,7 @@
       showFormMsg('The end time has to be after the start time.', 'error');
       return;
     }
-
+    console.log("Sending booking:", body);
     try{
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
