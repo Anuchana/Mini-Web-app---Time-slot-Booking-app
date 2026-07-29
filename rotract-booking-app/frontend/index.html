@@ -1,58 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Slot Booking</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SyncSpace — Reserve a slot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- CREATE BOOKING FORM -->
-        <div class="card">
-            <h2>Book a Time Slot</h2>
-            <form id="booking-form">
-                <input type="text" id="name" placeholder="Your Name" required>
-                <input type="date" id="booking_date" required>
-                <div class="time-group">
-                    <input type="time" id="start_time" required>
-                    <input type="time" id="end_time" required>
-                </div>
-                <select id="category">
-                    <option value="Meeting">Meeting</option>
-                    <option value="Call">Call</option>
-                    <option value="Focus Work">Focus Work</option>
-                </select>
-                <select id="priority">
-                    <option value="High">High Priority</option>
-                    <option value="Medium" selected>Medium Priority</option>
-                    <option value="Low">Low Priority</option>
-                </select>
-                <input type="text" id="note" placeholder="Optional Note">
-                <input type="password" id="delete_code" placeholder="Secret Delete Code" required>
-                <button type="submit">Submit Booking</button>
-            </form>
-            <p id="message-box" class="hidden"></p>
-        </div>
 
-        <!-- VIEW AND FILTER BOOKINGS -->
-        <div class="card">
-            <h2>Upcoming Bookings</h2>
-            <div class="filters">
-                <input type="date" id="filter_date" placeholder="Filter by Date">
-                <select id="sort_by">
-                    <option value="date">Sort by Date</option>
-                    <option value="priority">Sort by Priority</option>
-                </select>
-                <button type="button" onclick="loadBookings()">Apply Filters</button>
-            </div>
-            
-            <div id="bookings-list">
-                <!-- Bookings will be injected here by JavaScript -->
-            </div>
+<header class="topbar">
+  <div class="brand">
+    <h1>Sync<span class="dot">Space</span></h1>
+    <p>One shared line for the day. Reserve a stretch of it, see what's already claimed, cancel with your code.</p>
+  </div>
+  <div class="day-picker">
+    <label for="viewDate">Viewing</label>
+    <input type="date" id="viewDate">
+  </div>
+</header>
+
+<main>
+
+  <section class="timeline-panel" aria-label="Day timeline">
+    <h2>The line — <span id="lineDateLabel"></span></h2>
+    <p class="timeline-sub">07:00 to 21:00, drawn to scale. Each block is a reservation.</p>
+    <ul class="legend">
+      <li><span class="swatch cat-Meeting"></span>Meeting</li>
+      <li><span class="swatch cat-Call"></span>Call</li>
+      <li><span class="swatch cat-Personal"></span>Personal</li>
+      <li><span class="swatch cat-Event"></span>Event</li>
+      <li><span class="swatch cat-Other"></span>Other</li>
+    </ul>
+    <div class="ruler-wrap">
+      <div class="ruler-inner" id="ruler"></div>
+      <div class="track" id="track"></div>
+    </div>
+    <p class="empty-state" id="emptyState" hidden>Nothing on the line for this day. Be the first to claim a stretch of it.</p>
+  </section>
+
+  <section class="content-grid">
+
+    <div class="panel form-panel">
+      <h2>Reserve a slot</h2>
+      <div class="form-msg" id="formMsg"></div>
+      <form id="bookingForm">
+        <div class="field">
+          <label for="name">Name</label>
+          <input type="text" id="name" required placeholder="Who is this for?">
         </div>
+        <div class="field">
+          <label for="booking_date">Date</label>
+          <input type="date" id="booking_date" required>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="start_time">Starts</label>
+            <input type="time" id="start_time" required>
+          </div>
+          <div class="field">
+            <label for="end_time">Ends</label>
+            <input type="time" id="end_time" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category">
+            <option value="Meeting">Meeting</option>
+            <option value="Call">Call</option>
+            <option value="Personal">Personal</option>
+            <option value="Event">Event</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="note">Note <span style="text-transform:none;letter-spacing:normal;">(optional)</span></label>
+          <textarea id="note" placeholder="Anything the next person should know"></textarea>
+        </div>
+        <div class="field">
+          <label for="delete_code">Cancellation code</label>
+          <input type="text" id="delete_code" required placeholder="A word or code only you know">
+        </div>
+        <button type="submit" class="btn btn-primary">Reserve slot</button>
+      </form>
     </div>
 
-    <script src="app.js"></script>
+    <div class="panel list-panel">
+      <h2>Reservations for this day</h2>
+      <ul id="bookingList"></ul>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>SlotLine · shared scheduling, kept honest by a cancellation code.</footer>
+
+<script src="app.js"></script>
 </body>
 </html>

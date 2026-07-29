@@ -33,40 +33,49 @@ class DeleteRequest(BaseModel):
 
 # Create booking endpoint with overlap validation
 @app.post("/api/bookings")
+# 1. CREATE BOOKING
+@app.post("/api/bookings")
+# 1. CREATE BOOKING
+@app.post("/api/bookings")
 def create_booking(booking: Bookings, session: Session = Depends(get_session)):
-    # Overlap validation logic
-    statement = select(Bookings).where(
-        Bookings.booking_date == booking.booking_date,
-        Bookings.start_time < booking.end_time,
-        Bookings.end_time > booking.start_time
-    )
     
-    overlapping_bookings = session.exec(statement).first()
+    # Check the database for ALL scheduled meetings on this exact date
+    statement = select(Bookings).where(Bookings.booking_date == booking.booking_date)
+    existing_bookings_today = session.exec(statement).all()
     
-    if overlapping_bookings:
-        raise HTTPException(
-            status_code=400, 
-            detail="This time slot overlaps with an existing booking."
-        )
+    # Loop through them and check the times safely
+    for existing in existing_bookings_today:
+        
+        # new times and existing times into standard strings
+        new_start = str(booking.start_time)
+        new_end = str(booking.end_time)
+        exist_start = str(existing.start_time)
+        exist_end = str(existing.end_time)
+        
+        # compare the strings safely
+        if new_start < exist_end and new_end > exist_start:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Overlap error! This conflicts with an existing booking from {exist_start} to {exist_end}."
+            )
 
     session.add(booking)
     session.commit()
     session.refresh(booking)
+    
     return {"status": "success", "data": booking}
 
 
 # Get bookings endpoint with dynamic sorting and filtering
 @app.get("/api/bookings")
 def get_bookings(
-    sort_by: str = Query("date", description="Sort by 'date' or 'priority'"), 
-    filter_date: Optional[date] = Query(None, description="Filter by exact date (YYYY-MM-DD)"),
-    filter_start_time: Optional[time] = Query(None, description="Filter by minimum start time (HH:MM:SS)"),
-    filter_end_time: Optional[time] = Query(None, description="Filter by maximum end time (HH:MM:SS)"),
+    filter_date: Optional[date] = Query(None, description="Filter by exact date"),
+    filter_start_time: Optional[time] = Query(None, description="Filter by min start time"),
+    filter_end_time: Optional[time] = Query(None, description="Filter by max end time"),
     session: Session = Depends(get_session)
 ):
     statement = select(Bookings)
     
-    # Apply dynamic filters if the user provides them
     if filter_date:
         statement = statement.where(Bookings.booking_date == filter_date)
     if filter_start_time:
@@ -74,11 +83,8 @@ def get_bookings(
     if filter_end_time:
         statement = statement.where(Bookings.end_time <= filter_end_time)
 
-    # Apply sorting
-    if sort_by == "priority":
-        statement = statement.order_by(Bookings.priority, Bookings.booking_date, Bookings.start_time)
-    else:
-        statement = statement.order_by(Bookings.booking_date, Bookings.start_time)
+    # Sort purely chronologically now
+    statement = statement.order_by(Bookings.booking_date, Bookings.start_time)
         
     bookings = session.exec(statement).all()
     return {"status": "success", "data": bookings}

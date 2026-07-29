@@ -9,7 +9,6 @@ class Bookings(SQLModel, table=True):
     start_time: time
     end_time: time
     category: str
-    priority: str = Field(default="Medium")
     note: Optional[str] = None
     delete_code: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
