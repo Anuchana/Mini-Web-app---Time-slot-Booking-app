@@ -1,5 +1,5 @@
 // Point this at wherever the FastAPI backend is running.
-  const API_BASE = 'http://localhost:8000';
+  const API_BASE = 'https://syncspace-r05n.onrender.com/';
 
   const DAY_START_MIN = 7 * 60;   // 07:00
   const DAY_END_MIN   = 21 * 60;  // 21:00
