@@ -33,15 +33,21 @@ class DeleteRequest(BaseModel):
 
 # Create booking endpoint with overlap validation
 @app.post("/api/bookings")
-# 1. CREATE BOOKING
-@app.post("/api/bookings")
-# 1. CREATE BOOKING
-@app.post("/api/bookings")
 def create_booking(booking: Bookings, session: Session = Depends(get_session)):
 
+    # Convert strings to proper Python types (safety fix)
+    if isinstance(booking.booking_date, str):
+        booking.booking_date = date.fromisoformat(booking.booking_date)
+
+    if isinstance(booking.start_time, str):
+        booking.start_time = time.fromisoformat(booking.start_time)
+
+    if isinstance(booking.end_time, str):
+        booking.end_time = time.fromisoformat(booking.end_time)
+
     booking_datetime = datetime.combine(
-    booking.booking_date,
-    booking.start_time
+        booking.booking_date,
+        booking.start_time
     )
 
     if booking_datetime <= datetime.now():
@@ -49,33 +55,35 @@ def create_booking(booking: Bookings, session: Session = Depends(get_session)):
             status_code=400,
             detail="You cannot reserve a past time slot."
         )
-    
-    # Check the database for ALL scheduled meetings on this exact date
-    statement = select(Bookings).where(Bookings.booking_date == booking.booking_date)
+
+    statement = select(Bookings).where(
+        Bookings.booking_date == booking.booking_date
+    )
+
     existing_bookings_today = session.exec(statement).all()
-    
-    # Loop through them and check the times safely
+
     for existing in existing_bookings_today:
-        
-        # new times and existing times into standard strings
-        new_start = str(booking.start_time)
-        new_end = str(booking.end_time)
-        exist_start = str(existing.start_time)
-        exist_end = str(existing.end_time)
-        
-        # compare the strings safely
+
+        new_start = booking.start_time
+        new_end = booking.end_time
+
+        exist_start = existing.start_time
+        exist_end = existing.end_time
+
         if new_start < exist_end and new_end > exist_start:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Overlap error! This conflicts with an existing booking from {exist_start} to {exist_end}."
             )
 
     session.add(booking)
     session.commit()
     session.refresh(booking)
-    
-    return {"status": "success", "data": booking}
 
+    return {
+        "status": "success",
+        "data": booking
+    }
 
 # Get bookings endpoint with dynamic sorting and filtering
 @app.get("/api/bookings")

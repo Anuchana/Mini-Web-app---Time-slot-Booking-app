@@ -5,67 +5,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SyncSpace — Reserve a slot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <h1>Sync<span class="dot">Space</span></h1>
-    <p>One shared line for the day. Reserve a stretch of it, see what's already claimed, cancel with your code.</p>
-  </div>
-  <div class="day-picker">
-  <span id="topDateLabel" class="top-date"></span>
-  </div>
-</header>
+<nav class="navbar">
+  <a class="logo" href="#" aria-label="SyncSpace home">
+    <svg class="logo-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13 10c-4.5 0-7 3-7 6.5S8.5 22 13 22h2" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M27 30c4.5 0 7-3 7-6.5S31.5 18 27 18h-2" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M15 22c0 3.6 2.9 6.5 6.5 6.5H25" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" opacity=".55"/>
+      <path d="M25 18c0-3.6-2.9-6.5-6.5-6.5H15" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" opacity=".55"/>
+    </svg>
+    <span class="logo-text">Sync<span class="accent">Space</span></span>
+  </a>
 
-<main>
+  
 
-  <section class="timeline-panel" aria-label="Day timeline">
-    <h2>The line — <span id="lineDateLabel"></span></h2>
-    <p class="timeline-sub">07:00 to 21:00, drawn to scale. Each block is a reservation.</p>
-    <ul class="legend">
-      <li><span class="swatch cat-Meeting"></span>Meeting</li>
-      <li><span class="swatch cat-Call"></span>Call</li>
-      <li><span class="swatch cat-Personal"></span>Personal</li>
-      <li><span class="swatch cat-Event"></span>Event</li>
-      <li><span class="swatch cat-Other"></span>Other</li>
-    </ul>
-    <div class="ruler-wrap">
-      <div class="ruler-inner" id="ruler"></div>
-      <div class="track" id="track"></div>
+  <div class="nav-right">
+    <div class="date-chip">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span id="topDateLabel"></span>
     </div>
-    <p class="empty-state" id="emptyState" hidden>Nothing on the line for this day. Be the first to claim a stretch of it.</p>
-  </section>
+    <button class="btn-new" id="openModalBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      New Reservation
+    </button>
+    
+  </div>
+</nav>
 
-  <section class="content-grid">
 
-    <div class="panel form-panel">
-      <h2>Reserve a slot</h2>
-      <div class="form-msg" id="formMsg"></div>
-      <form id="bookingForm">
-        <div class="field">
-          <label for="name">Name</label>
-          <input type="text" id="name" required placeholder="Who is this for?">
+
+<main class="page">
+
+  <section class="reservations-card">
+    <h1>Reservations for this day</h1>
+
+    <div class="filters-row">
+      <div class="filter-field">
+        <label for="viewDate">Filter by date <span class="tag-req">mandatory</span></label>
+        <div class="input-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input type="date" id="viewDate" required>
         </div>
-        <div class="field">
-          <label for="booking_date">Date</label>
-          <input type="date" id="booking_date" required>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label for="start_time">Starts</label>
-            <input type="time" id="start_time" required>
-          </div>
-          <div class="field">
-            <label for="end_time">Ends</label>
-            <input type="time" id="end_time" required>
-          </div>
-        </div>
-        <div class="field">
-          <label for="category">Category</label>
-          <select id="category">
+      </div>
+
+      <div class="filter-field">
+        <label for="filterCategory">Filter by category <span class="tag-opt">optional</span></label>
+        <div class="input-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.8"/></svg>
+          <select id="filterCategory">
+            <option value="">All categories</option>
             <option value="Meeting">Meeting</option>
             <option value="Call">Call</option>
             <option value="Personal">Personal</option>
@@ -73,56 +65,99 @@
             <option value="Other">Other</option>
           </select>
         </div>
-        <div class="field">
-          <label for="note">Note <span style="text-transform:none;letter-spacing:normal;">(optional)</span></label>
-          <textarea id="note" placeholder="Anything the next person should know"></textarea>
-        </div>
-        <div class="field">
-          <label for="delete_code">Cancellation code</label>
-          <input type="text" id="delete_code" required placeholder="A word or code only you know">
-        </div>
-        <button type="submit" class="btn btn-primary">Reserve slot</button>
-      </form>
+      </div>
     </div>
 
-    <div class="panel list-panel">
+    <ul class="legend">
+      <li><span class="swatch cat-Meeting"></span>Meeting</li>
+      <li><span class="swatch cat-Call"></span>Call</li>
+      <li><span class="swatch cat-Personal"></span>Personal</li>
+      <li><span class="swatch cat-Event"></span>Event</li>
+      <li><span class="swatch cat-Other"></span>Other</li>
+    </ul>
 
-  <h2>Reservations for this day</h2>
-
-  <div class="reservation-filters">
-
-    <div class="filter-field">
-      <label for="viewDate">Filter by date</label>
-      <input type="date" id="viewDate">
+    <div class="timeline-block">
+      <div class="timeline-row-label">All Reservations</div>
+      <div class="ruler-wrap">
+        <div class="ruler-inner" id="ruler"></div>
+        <div class="track" id="track"></div>
+      </div>
     </div>
+    <p class="empty-state" id="emptyState" hidden>Nothing on the line for this day. Be the first to claim a stretch of it.</p>
+  </section>
 
-
-    <div class="filter-field">
-      <label for="filterCategory">Filter by category</label>
-
-      <select id="filterCategory">
-        <option value="">All</option>
-        <option value="Meeting">Meeting</option>
-        <option value="Call">Call</option>
-        <option value="Personal">Personal</option>
-        <option value="Event">Event</option>
-        <option value="Other">Other</option>
-      </select>
-
+  <section class="list-card">
+    <h2>Reservation List</h2>
+    <div class="table-wrap">
+      <table class="reservation-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Reserved By</th>
+            <th>Notes</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="bookingTableBody"></tbody>
+      </table>
     </div>
-
-  </div>
-
-
-  <ul id="bookingList"></ul>
-
-</div>
-
   </section>
 
 </main>
 
-<footer>SlotLine · shared scheduling, kept honest by a cancellation code.</footer>
+<footer>Sync Space · shared scheduling, kept honest by a cancellation code.</footer>
+
+<div class="modal-overlay" id="modalOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <h2 id="modalTitle">Reserve a slot</h2>
+    <div class="form-msg" id="formMsg"></div>
+    <form id="bookingForm">
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" required placeholder="Who is this for?">
+      </div>
+      <div class="field">
+        <label for="booking_date">Date</label>
+        <input type="date" id="booking_date" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="start_time">Starts</label>
+          <input type="time" id="start_time" required>
+        </div>
+        <div class="field">
+          <label for="end_time">Ends</label>
+          <input type="time" id="end_time" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="Meeting">Meeting</option>
+          <option value="Call">Call</option>
+          <option value="Personal">Personal</option>
+          <option value="Event">Event</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="note">Note <span class="tag-opt">optional</span></label>
+        <textarea id="note" placeholder="Anything the next person should know"></textarea>
+      </div>
+      <div class="field">
+        <label for="delete_code">Cancellation code</label>
+        <input type="text" id="delete_code" required placeholder="A word or code only you know">
+      </div>
+      <button type="submit" class="btn btn-primary">Reserve slot</button>
+    </form>
+  </div>
+</div>
 
 <script src="app.js"></script>
 </body>

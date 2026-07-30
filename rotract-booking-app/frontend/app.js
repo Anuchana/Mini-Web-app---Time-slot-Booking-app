@@ -1,23 +1,48 @@
 // Point this at wherever the FastAPI backend is running.
-  const API_BASE = 'https://syncspace-r05n.onrender.com';
-
+const API_BASE = 'https://syncspace-r05n.onrender.com';
+//const API_BASE = 'http://localhost:8000';
   const DAY_START_MIN = 7 * 60;   // 07:00
   const DAY_END_MIN   = 21 * 60;  // 21:00
   const DAY_SPAN_MIN  = DAY_END_MIN - DAY_START_MIN;
 
   const CATEGORY_CLASS = { Meeting: 'cat-Meeting', Call: 'cat-Call', Personal: 'cat-Personal', Event: 'cat-Event', Other: 'cat-Other' };
 
+  const PERSON_ICON = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.5" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c1.2-3.2 3.8-4.9 6.5-4.9s5.3 1.7 6.5 4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
   const el = (id) => document.getElementById(id);
   const viewDateInput = el('viewDate');
   const bookingDateInput = el('booking_date');
+  const filterCategorySelect = el('filterCategory');
   const ruler = el('ruler');
   const track = el('track');
   const emptyState = el('emptyState');
-  const lineDateLabel = el('lineDateLabel');
   const topDateLabel = el('topDateLabel');
-  const bookingList = el('bookingList');
+  const bookingTableBody = el('bookingTableBody');
   const bookingForm = el('bookingForm');
   const formMsg = el('formMsg');
+  const updatedText = el('updatedText');
+
+  const modalOverlay = el('modalOverlay');
+  const openModalBtn = el('openModalBtn');
+  const modalClose = el('modalClose');
+
+  function openModal(){
+    modalOverlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+    el('name').focus();
+  }
+  function closeModal(){
+    modalOverlay.hidden = true;
+    document.body.style.overflow = '';
+  }
+  openModalBtn.addEventListener('click', openModal);
+  modalClose.addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modalOverlay.hidden) closeModal();
+  });
 
   function todayISO(){
     const d = new Date();
@@ -41,6 +66,16 @@
     return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
+  function formatTopDate(iso){
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function updateTopDate(){
+    const today = todayISO();
+    topDateLabel.textContent = formatTopDate(today);
+  }
+
   function showFormMsg(text, type){
     formMsg.textContent = text;
     formMsg.className = `form-msg show ${type}`;
@@ -50,9 +85,16 @@
     formMsg.textContent = '';
   }
 
+  function initials(name){
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  }
+
   function buildRuler(){
     ruler.innerHTML = '';
-    for (let m = DAY_START_MIN; m <= DAY_END_MIN; m += 120){
+    for (let m = DAY_START_MIN; m <= DAY_END_MIN; m += 60){
       const pct = ((m - DAY_START_MIN) / DAY_SPAN_MIN) * 100;
       const tick = document.createElement('div');
       tick.className = 'tick';
@@ -63,6 +105,10 @@
       tick.textContent = `${hour12}${period}`;
       ruler.appendChild(tick);
     }
+  }
+
+  function clampToDay(minutes){
+    return Math.min(Math.max(minutes, DAY_START_MIN), DAY_END_MIN);
   }
 
   function renderTrack(bookings){
@@ -84,47 +130,56 @@
       const block = document.createElement('div');
       block.className = `block ${CATEGORY_CLASS[b.category] || 'cat-Other'}`;
       block.style.left = leftPct + '%';
-      block.style.width = Math.max(widthPct, 1.2) + '%';
+      block.style.width = Math.max(widthPct, 6) + '%';
       block.title = `${b.name} · ${formatTime(b.start_time)}–${formatTime(b.end_time)}`;
-      block.textContent = b.name;
+      block.innerHTML = `
+        <span class="name">${PERSON_ICON}${escapeHtml(b.name)}</span>
+        <span class="time">${formatTime(b.start_time)} – ${formatTime(b.end_time)}</span>
+      `;
       track.appendChild(block);
     });
   }
 
-  function clampToDay(minutes){
-    return Math.min(Math.max(minutes, DAY_START_MIN), DAY_END_MIN);
-  }
-
-  function renderList(bookings){
-    bookingList.innerHTML = '';
+  function renderTable(bookings){
+    bookingTableBody.innerHTML = '';
     if (!bookings.length){
-      const li = document.createElement('li');
-      li.className = 'list-empty';
-      li.textContent = 'Nothing reserved for this day yet.';
-      bookingList.appendChild(li);
+      const tr = document.createElement('tr');
+      tr.className = 'list-empty';
+      tr.innerHTML = `<td colspan="7">Nothing reserved for this day yet.</td>`;
+      bookingTableBody.appendChild(tr);
       return;
     }
 
     bookings.forEach((b) => {
-      const li = document.createElement('li');
-      li.className = 'booking-card';
+      const tr = document.createElement('tr');
+      const catClass = CATEGORY_CLASS[b.category] || 'cat-Other';
 
-      li.innerHTML = `
-        <div>
-          <p class="who">${escapeHtml(b.name)}</p>
-          <p class="when">${formatTime(b.start_time)} – ${formatTime(b.end_time)}</p>
-          <span class="badge ${CATEGORY_CLASS[b.category] || 'cat-Other'}">${escapeHtml(b.category)}</span>
-          ${b.note ? `<p class="note">${escapeHtml(b.note)}</p>` : ''}
-        </div>
-        <div class="card-actions">
-          <button class="btn btn-danger" data-action="toggle-delete" data-id="${b.id}">Cancel</button>
-          <div class="delete-inline" id="delete-row-${b.id}">
-            <input type="text" placeholder="Cancellation code" id="delete-code-${b.id}">
-            <button class="btn btn-ghost" data-action="confirm-delete" data-id="${b.id}">Confirm</button>
+      tr.innerHTML = `
+        <td class="cell-when">${formatTime(b.start_time)} – ${formatTime(b.end_time)}</td>
+        <td class="cell-title">${escapeHtml(b.name)}</td>
+        <td><span class="badge ${catClass}">${escapeHtml(b.category)}</span></td>
+        <td>
+          <div class="reserved-by">
+            <span class="avatar-chip">${escapeHtml(initials(b.name))}</span>
+            <span>${escapeHtml(b.name)}</span>
           </div>
-        </div>
+        </td>
+        <td class="cell-notes">${b.note ? escapeHtml(b.note) : '<span class="dash">—</span>'}</td>
+        <td><span class="badge status-confirmed">Confirmed</span></td>
+        <td class="actions-cell">
+          <button class="kebab-btn" type="button" data-action="toggle-menu" data-id="${b.id}" aria-label="Actions">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg>
+          </button>
+          <div class="action-menu" id="menu-${b.id}">
+            <p>Cancel this reservation</p>
+            <div class="code-row">
+              <input type="text" placeholder="Cancellation code" id="delete-code-${b.id}">
+              <button class="btn btn-danger" type="button" data-action="confirm-delete" data-id="${b.id}">Confirm</button>
+            </div>
+          </div>
+        </td>
       `;
-      bookingList.appendChild(li);
+      bookingTableBody.appendChild(tr);
     });
   }
 
@@ -134,31 +189,39 @@
     return div.innerHTML;
   }
 
+  function applyFilters(bookings){
+    const cat = filterCategorySelect.value;
+    if (!cat) return bookings;
+    return bookings.filter(b => b.category === cat);
+  }
   async function loadBookings(){
     const date = viewDateInput.value;
-    lineDateLabel.textContent = formatDateLabel(date);
-
+    
     try{
       const res = await fetch(`${API_BASE}/api/bookings?filter_date=${date}`);
       const payload = await res.json();
       const bookings = (payload.data || []).slice().sort((a, b) => a.start_time.localeCompare(b.start_time));
-      renderTrack(bookings);
-      renderList(bookings);
+      const filtered = applyFilters(bookings);
+      renderTrack(filtered);
+      renderTable(filtered);
+      lastLoadedAt = Date.now();
     } catch (err){
       emptyState.hidden = false;
       emptyState.textContent = "Couldn't reach the schedule. Check that the API is running.";
-      bookingList.innerHTML = '<li class="list-empty">Couldn\'t load reservations.</li>';
+      bookingTableBody.innerHTML = '<tr class="list-empty"><td colspan="7">Couldn\'t load reservations.</td></tr>';
     }
   }
 
-  bookingList.addEventListener('click', async (e) => {
+  bookingTableBody.addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const id = btn.dataset.id;
 
-    if (btn.dataset.action === 'toggle-delete'){
-      const row = el(`delete-row-${id}`);
-      row.classList.toggle('show');
+    if (btn.dataset.action === 'toggle-menu'){
+      const menu = el(`menu-${id}`);
+      const wasOpen = menu.classList.contains('show');
+      document.querySelectorAll('.action-menu.show').forEach(m => m.classList.remove('show'));
+      if (!wasOpen) menu.classList.add('show');
       return;
     }
 
@@ -189,12 +252,17 @@
     }
   });
 
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.actions-cell')){
+      document.querySelectorAll('.action-menu.show').forEach(m => m.classList.remove('show'));
+    }
+  });
+
   bookingForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearFormMsg();
 
     const body = {
-      
       name: el('name').value.trim(),
       booking_date: bookingDateInput.value,
       start_time: el('start_time').value,
@@ -221,7 +289,6 @@
       showFormMsg('The end time has to be after the start time.', 'error');
       return;
     }
-    console.log("Sending booking:", body);
     try{
       const res = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
@@ -243,12 +310,14 @@
       if (body.booking_date === viewDateInput.value){
         loadBookings();
       }
+      setTimeout(closeModal, 900);
     } catch (err){
       showFormMsg("Couldn't reach the API. Is the server running?", 'error');
     }
   });
 
   viewDateInput.addEventListener('change', loadBookings);
+  filterCategorySelect.addEventListener('change', loadBookings);
 
   // init
   (function init(){
@@ -256,5 +325,7 @@
     viewDateInput.value = today;
     bookingDateInput.value = today;
     buildRuler();
+    updateTopDate();
     loadBookings();
+    
   })();
