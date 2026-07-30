@@ -6,7 +6,7 @@ from models import Bookings
 from contextlib import asynccontextmanager
 from contextlib import asynccontextmanager
 from typing import Optional
-from datetime import date, time
+from datetime import date, datetime, time
 from fastapi import FastAPI, Depends, HTTPException, Query
 
 # Automatically create tables on startup
@@ -38,6 +38,17 @@ class DeleteRequest(BaseModel):
 # 1. CREATE BOOKING
 @app.post("/api/bookings")
 def create_booking(booking: Bookings, session: Session = Depends(get_session)):
+
+    booking_datetime = datetime.combine(
+    booking.booking_date,
+    booking.start_time
+    )
+
+    if booking_datetime <= datetime.now():
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot reserve a past time slot."
+        )
     
     # Check the database for ALL scheduled meetings on this exact date
     statement = select(Bookings).where(Bookings.booking_date == booking.booking_date)

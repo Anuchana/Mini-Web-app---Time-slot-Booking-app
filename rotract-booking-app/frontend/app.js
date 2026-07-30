@@ -195,6 +195,7 @@
     clearFormMsg();
 
     const body = {
+      
       name: el('name').value.trim(),
       booking_date: bookingDateInput.value,
       start_time: el('start_time').value,
@@ -203,6 +204,19 @@
       note: el('note').value.trim() || null,
       delete_code: el('delete_code').value.trim()
     };
+    const now = new Date();
+
+    const bookingDateTime = new Date(
+        `${body.booking_date}T${body.start_time}`
+    );
+
+    if (bookingDateTime <= now) {
+        showFormMsg(
+            "You cannot reserve a time that has already passed.",
+            "error"
+        );
+        return;
+    }
 
     if (body.end_time <= body.start_time){
       showFormMsg('The end time has to be after the start time.', 'error');
