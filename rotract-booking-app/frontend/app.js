@@ -1,8 +1,8 @@
 // Point this at wherever the FastAPI backend is running.
-const API_BASE = 'https://syncspace-r05n.onrender.com';
+  const API_BASE = 'https://syncspace-r05n.onrender.com';
   const DAY_START_MIN = 7 * 60;   // 07:00
   const DAY_END_MIN   = 21 * 60;  // 21:00
-  const DAY_SPAN_MIN  = DAY_END_MIN - DAY_START_MIN;
+  const HOUR_WIDTH = 120; // pixels per hour
 
   const CATEGORY_CLASS = { Meeting: 'cat-Meeting', Call: 'cat-Call', Personal: 'cat-Personal', Event: 'cat-Event', Other: 'cat-Other' };
 
@@ -19,7 +19,6 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
   const bookingTableBody = el('bookingTableBody');
   const bookingForm = el('bookingForm');
   const formMsg = el('formMsg');
-  const updatedText = el('updatedText');
 
   const modalOverlay = el('modalOverlay');
   const openModalBtn = el('openModalBtn');
@@ -45,8 +44,13 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
 
   function todayISO(){
     const d = new Date();
-    return d.toISOString().slice(0,10);
-  }
+
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+
+    return `${year}-${month}-${day}`;
+} 
 
   function toMinutes(hhmmss){
     const [h, m] = hhmmss.split(':').map(Number);
@@ -58,11 +62,6 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
     const period = h >= 12 ? 'PM' : 'AM';
     const hour12 = ((h + 11) % 12) + 1;
     return `${hour12}:${String(m).padStart(2,'0')} ${period}`;
-  }
-
-  function formatDateLabel(iso){
-    const d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
   function formatTopDate(iso){
@@ -92,19 +91,35 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
   }
 
   function buildRuler(){
+
     ruler.innerHTML = '';
-    for (let m = DAY_START_MIN; m <= DAY_END_MIN; m += 60){
-      const pct = ((m - DAY_START_MIN) / DAY_SPAN_MIN) * 100;
-      const tick = document.createElement('div');
-      tick.className = 'tick';
-      tick.style.left = pct + '%';
-      const h = Math.floor(m / 60);
-      const period = h >= 12 ? 'PM' : 'AM';
-      const hour12 = ((h + 11) % 12) + 1;
-      tick.textContent = `${hour12}${period}`;
-      ruler.appendChild(tick);
+
+    const totalHours = (DAY_END_MIN - DAY_START_MIN) / 60;
+
+    const timelineWidth = totalHours * HOUR_WIDTH;
+
+    ruler.style.width = timelineWidth + "px";
+    track.style.width = timelineWidth + "px";
+
+
+    for(let m = DAY_START_MIN; m <= DAY_END_MIN; m += 60){
+
+        const left = ((m - DAY_START_MIN) / 60) * HOUR_WIDTH;
+
+        const tick = document.createElement('div');
+
+        tick.className = 'tick';
+        tick.style.left = left + "px";
+
+        const h = Math.floor(m / 60);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour12 = ((h + 11) % 12) + 1;
+
+        tick.textContent = `${hour12}${period}`;
+
+        ruler.appendChild(tick);
     }
-  }
+  } 
 
   function clampToDay(minutes){
     return Math.min(Math.max(minutes, DAY_START_MIN), DAY_END_MIN);
@@ -123,13 +138,13 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
       const endMin = clampToDay(toMinutes(b.end_time));
       if (endMin <= startMin) return;
 
-      const leftPct = ((startMin - DAY_START_MIN) / DAY_SPAN_MIN) * 100;
-      const widthPct = ((endMin - startMin) / DAY_SPAN_MIN) * 100;
+      const leftPx = ((startMin - DAY_START_MIN) / 60) * HOUR_WIDTH;
+      const widthPx = ((endMin - startMin) / 60) * HOUR_WIDTH;
 
       const block = document.createElement('div');
       block.className = `block ${CATEGORY_CLASS[b.category] || 'cat-Other'}`;
-      block.style.left = leftPct + '%';
-      block.style.width = Math.max(widthPct, 6) + '%';
+      block.style.left = leftPx + "px";
+      block.style.width = Math.max(widthPx, 80) + "px";
       block.title = `${b.name} · ${formatTime(b.start_time)}–${formatTime(b.end_time)}`;
       block.innerHTML = `
         <span class="name">${PERSON_ICON}${escapeHtml(b.name)}</span>
@@ -159,7 +174,6 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
         <td><span class="badge ${catClass}">${escapeHtml(b.category)}</span></td>
         <td>
           <div class="reserved-by">
-            <span class="avatar-chip">${escapeHtml(initials(b.name))}</span>
             <span>${escapeHtml(b.name)}</span>
           </div>
         </td>
@@ -203,7 +217,6 @@ const API_BASE = 'https://syncspace-r05n.onrender.com';
       const filtered = applyFilters(bookings);
       renderTrack(filtered);
       renderTable(filtered);
-      lastLoadedAt = Date.now();
     } catch (err){
       emptyState.hidden = false;
       emptyState.textContent = "Couldn't reach the schedule. Check that the API is running.";
