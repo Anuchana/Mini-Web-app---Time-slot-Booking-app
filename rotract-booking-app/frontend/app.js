@@ -137,7 +137,6 @@
   async function loadBookings(){
     const date = viewDateInput.value;
     lineDateLabel.textContent = formatDateLabel(date);
-    topDateLabel.textContent = formatDateLabel(date);
 
     try{
       const res = await fetch(`${API_BASE}/api/bookings?filter_date=${date}`);
