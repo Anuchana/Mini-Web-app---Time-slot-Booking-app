@@ -109,7 +109,22 @@ def get_bookings(
     statement = statement.order_by(Bookings.booking_date, Bookings.start_time)
         
     bookings = session.exec(statement).all()
-    return {"status": "success", "data": bookings}
+    return {
+    "status": "success",
+    "data": [
+        {
+            "id": b.id,
+            "name": b.name,
+            "booking_date": b.booking_date,
+            "start_time": b.start_time,
+            "end_time": b.end_time,
+            "category": b.category,
+            "note": b.note,
+            "created_at": b.created_at,
+        }
+        for b in bookings
+    ]
+}
 
 
 # Delete booking endpoint with delete code verification
