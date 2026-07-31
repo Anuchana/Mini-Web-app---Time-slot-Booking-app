@@ -45,6 +45,48 @@ def create_booking(booking: Bookings, session: Session = Depends(get_session)):
     if isinstance(booking.end_time, str):
         booking.end_time = time.fromisoformat(booking.end_time)
 
+    # ---------- Input validation ----------
+
+    booking.name = booking.name.strip()
+
+    if len(booking.name) < 2 or len(booking.name) > 50:
+        raise HTTPException(
+            status_code=400,
+            detail="Name must be between 2 and 50 characters."
+        )
+
+    if booking.category not in ["Meeting", "Call", "Personal", "Event", "Other"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid category."
+        )
+
+    if booking.note and len(booking.note) > 300:
+        raise HTTPException(
+            status_code=400,
+            detail="Note cannot exceed 300 characters."
+        )
+
+    if len(booking.delete_code) < 4 or len(booking.delete_code) > 64:
+        raise HTTPException(
+            status_code=400,
+            detail="Delete code must be between 4 and 64 characters."
+        )
+
+    if booking.start_time >= booking.end_time:
+        raise HTTPException(
+            status_code=400,
+            detail="End time must be after start time."
+        )
+
+    if booking.start_time < time(7, 0) or booking.end_time > time(21, 0):
+        raise HTTPException(
+            status_code=400,
+            detail="Bookings are allowed only between 07:00 and 21:00."
+        )
+
+    # ---------- Existing validation ----------
+
     booking_datetime = datetime.combine(
         booking.booking_date,
         booking.start_time

@@ -1,13 +1,10 @@
 // Point this at wherever the FastAPI backend is running.
-  const API_BASE = 'https://syncspace-r05n.onrender.com';
+//const API_BASE = 'https://syncspace-r05n.onrender.com';
+  const API_BASE = 'http://localhost:8000';
   const DAY_START_MIN = 7 * 60;   // 07:00
   const DAY_END_MIN   = 21 * 60;  // 21:00
   const HOUR_WIDTH = 120; // pixels per hour
-
   const CATEGORY_CLASS = { Meeting: 'cat-Meeting', Call: 'cat-Call', Personal: 'cat-Personal', Event: 'cat-Event', Other: 'cat-Other' };
-
-  const PERSON_ICON = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.5" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19c1.2-3.2 3.8-4.9 6.5-4.9s5.3 1.7 6.5 4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-
   const el = (id) => document.getElementById(id);
   const viewDateInput = el('viewDate');
   const bookingDateInput = el('booking_date');
@@ -83,13 +80,6 @@
     formMsg.textContent = '';
   }
 
-  function initials(name){
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return '?';
-    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-  }
-
   function buildRuler(){
 
     ruler.innerHTML = '';
@@ -100,7 +90,6 @@
 
     ruler.style.width = timelineWidth + "px";
     track.style.width = timelineWidth + "px";
-
 
     for(let m = DAY_START_MIN; m <= DAY_END_MIN; m += 60){
 
@@ -146,8 +135,7 @@
       block.style.left = leftPx + "px";
       block.style.width = Math.max(widthPx, 80) + "px";
       block.title = `${b.name} · ${formatTime(b.start_time)}–${formatTime(b.end_time)}`;
-      block.innerHTML = `
-        <span class="name">${PERSON_ICON}${escapeHtml(b.name)}</span>
+      block.innerHTML = ` 
         <span class="time">${formatTime(b.start_time)} – ${formatTime(b.end_time)}</span>
       `;
       track.appendChild(block);
