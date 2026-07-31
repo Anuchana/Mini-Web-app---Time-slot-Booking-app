@@ -48,7 +48,7 @@ SyncSpace is a web-based reservation system for managing shared spaces and time 
 ## Project Structure
 
 ```
-SyncSpace/
+rotract-booking-app/
 │
 ├── frontend/
 │   ├── index.html
@@ -133,14 +133,19 @@ Open `index.html` in your browser or use a simple local server.
 
 ---
 
-## Screenshots
+## Frontend
 
-Add screenshots of:
+## Home Page
 
-- Home page
-- Reservation timeline
-- Reservation list
-- Reservation form
+![Home](rotract-booking-app/screenshots/home.png)
+
+## Timeline
+
+![Timeline](rotract-booking-app/screenshots/timeline.png)
+
+## Booking Form
+
+![Booking Form](rotract-booking-app/screenshots/booking-form.png)
 
 ---
 
